@@ -1,35 +1,36 @@
 // --- 1. Инициализация Сцены ---
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x00001a); // Цвет темного неба
 document.getElementById('scene-container').appendChild(renderer.domElement);
 
-// Устанавливаем камеру
-camera.position.z = 8;
-camera.position.y = 3;
+// Устанавливаем камеру для лучшего обзора торта
+camera.position.set(0, 4, 10);
 
 // --- 2. Свет ---
-// Добавляем мягкий свет для освещения торта
-const ambientLight = new THREE.AmbientLight(0x404040, 2); // Мягкий окружающий свет
+const ambientLight = new THREE.AmbientLight(0x404040, 2); 
 scene.add(ambientLight);
 
-const pointLight = new THREE.PointLight(0xffffff, 1.5); // Точечный свет
-pointLight.position.set(5, 5, 5);
-scene.add(pointLight);
+// Добавляем Directional Light, чтобы торт выглядел объемным
+const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+mainLight.position.set(5, 10, 5);
+scene.add(mainLight);
 
-// --- 3. Создание Звездного Неба (Много мелких деталей!) ---
+
+// --- 3. Создание Звездного Неба ---
 function createStarField() {
     const starGeometry = new THREE.BufferGeometry();
-    const starCount = 5000;
+    const starCount = 6000;
     const vertices = [];
 
     for (let i = 0; i < starCount; i++) {
-        // Рандомное распределение звезд в большом кубе
-        const x = THREE.MathUtils.randFloatSpread(400); // От -200 до 200
-        const y = THREE.MathUtils.randFloatSpread(400);
-        const z = THREE.MathUtils.randFloatSpread(400);
+        // Рандомное распределение звезд в очень большом пространстве
+        const x = THREE.MathUtils.randFloatSpread(500); 
+        const y = THREE.MathUtils.randFloatSpread(500);
+        const z = THREE.MathUtils.randFloatSpread(500);
         vertices.push(x, y, z);
     }
 
@@ -37,7 +38,7 @@ function createStarField() {
 
     const starMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.1, // Мелкие звезды
+        size: 0.15, // Немного крупнее для видимости
         sizeAttenuation: true
     });
 
@@ -48,146 +49,154 @@ function createStarField() {
 
 const stars = createStarField();
 
-// ... (Остальной код до части 4 остается прежним)
 
-// --- 4. Создание Вращающегося Торта (Многослойный) и Свечей ---
+// --- 4. Создание Вращающегося Торта и Свечей ---
+
 const cakeGroup = new THREE.Group();
-const cakeMaterial = new THREE.MeshPhongMaterial({ color: 0xffa0c0 }); // Розовый крем
+const cakeColor = 0xf5b7c8; // Светло-розовый цвет
+const frostingColor = 0xffe6f0; // Более светлый крем
+const cakeMaterial = new THREE.MeshPhongMaterial({ color: cakeColor });
+const frostingMaterial = new THREE.MeshPhongMaterial({ color: frostingColor });
 
-// Слой 1 (Нижний)
-const geo1 = new THREE.CylinderGeometry(2.5, 2.5, 1, 32);
-const mesh1 = new THREE.Mesh(geo1, cakeMaterial);
-mesh1.position.y = 0.5;
-cakeGroup.add(mesh1);
+// 4.1. Слои торта
+const layers = [
+    { radius: 2.5, y: 0.5 },
+    { radius: 2.0, y: 1.5 },
+    { radius: 1.5, y: 2.5 }
+];
 
-// Слой 2 (Средний)
-const geo2 = new THREE.CylinderGeometry(2.0, 2.0, 1, 32);
-const mesh2 = new THREE.Mesh(geo2, cakeMaterial);
-mesh2.position.y = 1.5;
-cakeGroup.add(mesh2);
+layers.forEach(layer => {
+    const geo = new THREE.CylinderGeometry(layer.radius, layer.radius, 1, 64);
+    const mesh = new THREE.Mesh(geo, cakeMaterial);
+    mesh.position.y = layer.y;
+    cakeGroup.add(mesh);
 
-// Слой 3 (Верхний)
-const geo3 = new THREE.CylinderGeometry(1.5, 1.5, 1, 32);
-const mesh3 = new THREE.Mesh(geo3, cakeMaterial);
-mesh3.position.y = 2.5;
-cakeGroup.add(mesh3);
+    // 4.2. Декоративный крем (Ruffles) по краю
+    const ruffleRadius = layer.radius + 0.05;
+    const ruffleGeo = new THREE.TorusGeometry(ruffleRadius, 0.08, 16, 100);
+    const ruffle = new THREE.Mesh(ruffleGeo, frostingMaterial);
+    ruffle.rotation.x = Math.PI / 2;
+    ruffle.position.y = layer.y + 0.5;
+    cakeGroup.add(ruffle);
+});
 
-/**
- * Функция для добавления свечей на верхний слой торта
- */
+// 4.3. Подставка для торта (как на макете)
+const standGeo = new THREE.CylinderGeometry(0.5, 1.5, 1.5, 32);
+const standMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+const stand = new THREE.Mesh(standGeo, standMat);
+stand.position.y = -0.75;
+cakeGroup.add(stand);
+
+// 4.4. Свечи
 function addCandles(group, radius, count, height) {
-    const candleGeometry = new THREE.CylinderGeometry(0.05, 0.05, height, 8);
-    const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Белая свеча
-    const flameColor = 0xffa500; // Оранжево-желтый цвет пламени
+    const candleGeometry = new THREE.CylinderGeometry(0.08, 0.08, height, 16);
+    const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); 
+    const flameColor = 0xffaa00; 
     
-    // Создаем несколько свечей, расположенных по кругу
     for (let i = 0; i < count; i++) {
-        // Вычисляем позицию по кругу
         const angle = (i / count) * Math.PI * 2;
         const x = radius * Math.cos(angle);
         const z = radius * Math.sin(angle);
         
-        // 1. Тело свечи
+        // Тело свечи
         const candle = new THREE.Mesh(candleGeometry, candleMaterial);
-        candle.position.set(x, 2.5 + height / 2, z); // 2.5 - высота верхнего слоя торта
+        candle.position.set(x, 3.0 + height / 2, z); 
         group.add(candle);
         
-        // 2. Пламя (имитация с помощью PointLight)
-        const flameLight = new THREE.PointLight(flameColor, 2, 1.5); // Интенсивный, небольшой радиус
-        flameLight.position.set(x, 2.5 + height + 0.1, z);
+        // Пламя (Light) - Имитация мерцания
+        const flameLight = new THREE.PointLight(flameColor, 3, 1.5); 
+        flameLight.position.set(x, 3.0 + height, z);
+        flameLight.userData.baseIntensity = 3; // Для анимации мерцания
         group.add(flameLight);
         
-        // 3. Визуальное представление пламени (для красоты)
-        const flameGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-        const flameMaterial = new THREE.MeshBasicMaterial({ color: flameColor });
-        const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+        // Пламя (Visual - жёлтая точка)
+        const flameGeo = new THREE.SphereGeometry(0.05, 8, 8);
+        const flameMat = new THREE.MeshBasicMaterial({ color: flameColor });
+        const flame = new THREE.Mesh(flameGeo, flameMat);
         flame.position.copy(flameLight.position);
         group.add(flame);
     }
 }
 
-// Добавляем 8 свечей на верхний слой торта (радиус 1.3, высота 0.5)
-addCandles(cakeGroup, 1.3, 8, 0.5); 
+// Добавляем 5 свечей на верхний слой торта (радиус 0.7, высота 1.0)
+addCandles(cakeGroup, 0.7, 5, 1.0); 
 
-
-// Добавляем торт (вместе со свечами) в сцену
 scene.add(cakeGroup);
-cakeGroup.position.y = -1; // Опускаем его немного, чтобы был виден постамент
+cakeGroup.position.y = 0.5;
 
-// ... (Остальной код, включая 5, 6, 7 и 8, остается прежним)
 
 // --- 5. Интерактивные Ячейки (Сюрпризы) ---
 const surpriseData = [
-    { title: "Наша Первая Встреча", text: "Вспоминаешь этот день? Как будто вчера!", image: './photo1.jpg', position: new THREE.Vector3(3, 1.5, 0) },
-    { title: "Забавный Случай", text: "Ха-ха, помнишь, как...", image: './photo2.jpg', position: new THREE.Vector3(-3, 1.5, 0) },
-    { title: "Мое Пожелание", text: "Ашим, я желаю тебе... (Твой текст).", image: '', position: new THREE.Vector3(0, 4, 1) }
+    // УКАЗАТЬ ВАШИ ПОЖЕЛАНИЯ И ПУТИ К ФОТО
+    { title: "Наша Первая Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './photo1.jpg', position: new THREE.Vector3(3.5, 4.5, 0) },
+    { title: "Мое Главное Пожелание", text: "Ашим, я желаю тебе... (Ваше пожелание 2)", image: './photo2.jpg', position: new THREE.Vector3(-3.5, 4.5, 0) },
+    { title: "Мой Огромный Сюрприз", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 7, 0) }
 ];
 
 const interactiveMeshes = [];
-const surpriseMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc, transparent: true, opacity: 0.8 });
-const surpriseGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.05);
+const surpriseMaterial = new THREE.MeshLambertMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.01 }); // Почти невидимый объект
+const surpriseGeometry = new THREE.BoxGeometry(1.5, 1.5, 0.1); // Большая кликабельная область
 
 surpriseData.forEach((data) => {
     const mesh = new THREE.Mesh(surpriseGeometry, surpriseMaterial.clone());
     mesh.position.copy(data.position);
-    mesh.userData = data; // Сохраняем данные сюрприза в объекте
+    mesh.userData = data; 
     scene.add(mesh);
     interactiveMeshes.push(mesh);
 });
 
-// --- 6. Raycasting (Для кликов и наведения) ---
+// --- 6. Raycasting (Для кликов) ---
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let INTERSECTED = null;
 
 function onPointerMove(event) {
-    // Нормализация координат мыши
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    document.body.style.cursor = 'default'; // Сброс курсора
 }
 
 function onClick(event) {
-    if (INTERSECTED) {
-        // Если кликнули на интерактивный объект, показываем модальное окно
-        showModal(INTERSECTED.userData);
-    }
-}
-
-// Добавляем слушатели
-window.addEventListener('pointermove', onPointerMove);
-window.addEventListener('click', onClick);
-
-// --- 7. Анимационный Цикл ---
-function animate() {
-    requestAnimationFrame(animate);
-
-    // Вращение торта
-    cakeGroup.rotation.y += 0.005;
-
-    // Вращение звезд (для динамики)
-    stars.rotation.y += 0.0005;
-
-    // Обновление Raycaster для эффекта наведения
+    // При клике открываем модальное окно, только если объект наведен
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObjects(interactiveMeshes, false);
 
     if (intersects.length > 0) {
-        if (INTERSECTED != intersects[0].object) {
-            // Возвращаем цвет предыдущему объекту (если был)
-            if (INTERSECTED) {
-                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-            }
-            // Выделяем новый объект
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-            INTERSECTED.material.emissive.setHex(0xffff00); // Желтое свечение
-        }
+        showModal(intersects[0].object.userData);
+    }
+}
+
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('click', onClick);
+
+
+// --- 7. Анимационный Цикл ---
+const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Вращение торта и звезд
+    cakeGroup.rotation.y += 0.005;
+    stars.rotation.y += 0.0005;
+
+    // Мерцание пламени
+    const time = Date.now() * 0.003;
+    allFlameLights.forEach(light => {
+        // Рандомное изменение интенсивности
+        light.intensity = light.userData.baseIntensity + Math.sin(time + light.position.x * 10) * 0.5;
+    });
+
+
+    // Обработка наведения курсора
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(interactiveMeshes, false);
+
+    if (intersects.length > 0) {
+        // Устанавливаем курсор "рука", чтобы показать интерактивность
+        document.body.style.cursor = 'pointer'; 
     } else {
-        // Если ничего не наведено
-        if (INTERSECTED) {
-            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-        }
-        INTERSECTED = null;
+        document.body.style.cursor = 'default'; 
     }
 
     renderer.render(scene, camera);
@@ -217,7 +226,6 @@ function showModal(data) {
     modal.style.display = 'block';
 }
 
-// Закрытие модального окна по кнопке или клику вне его
 closeButton.onclick = function() {
     modal.style.display = 'none';
 }
@@ -228,12 +236,8 @@ window.onclick = function(event) {
     }
 }
 
-// Адаптивность
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-  
-
-
