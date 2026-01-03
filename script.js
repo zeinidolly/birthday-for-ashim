@@ -1,14 +1,11 @@
 // --- 1. Инициализация Сцены ---
 const scene = new THREE.Scene();
-// Камера с более широким обзором
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000); 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000); // Глубокий черный фон для ночного неба
+renderer.setClearColor(0x000000); // Глубокий черный фон
 document.getElementById('scene-container').appendChild(renderer.domElement);
-
-// Позиция камеры, чтобы торт был хорошо виден
 camera.position.set(0, 4, 10);
 
 // --- 2. Свет ---
@@ -19,7 +16,6 @@ const mainLight = new THREE.DirectionalLight(0xffffff, 1);
 mainLight.position.set(5, 10, 5);
 scene.add(mainLight);
 
-
 // --- 3. Создание Звездного Неба ---
 function createStarField() {
     const starGeometry = new THREE.BufferGeometry();
@@ -27,27 +23,59 @@ function createStarField() {
     const vertices = [];
 
     for (let i = 0; i < starCount; i++) {
-        // Рандомное распределение звезд в очень большом пространстве
         const x = THREE.MathUtils.randFloatSpread(500); 
         const y = THREE.MathUtils.randFloatSpread(500);
         const z = THREE.MathUtils.randFloatSpread(500);
         vertices.push(x, y, z);
     }
-
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
     const starMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.25, // Увеличенный размер для видимости на черном фоне
+        size: 0.25, // Крупные звезды
         sizeAttenuation: true
     });
-
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
     return stars;
 }
-
 const stars = createStarField();
+
+
+// --- 3.5. Конфетти (НОВЫЙ БЛОК) ---
+const confettiCount = 500;
+const confettiColors = [0xff007f, 0x00ffff, 0xffff00, 0xffe6f0]; // Розовый, голубой, желтый, белый
+const confettiGroup = new THREE.Group();
+
+function createConfetti() {
+    for (let i = 0; i < confettiCount; i++) {
+        const size = THREE.MathUtils.randFloat(0.05, 0.15);
+        const geometry = new THREE.PlaneGeometry(size, size); // Плоское конфетти
+        const material = new THREE.MeshBasicMaterial({ 
+            color: confettiColors[i % confettiColors.length], 
+            side: THREE.DoubleSide
+        });
+        const confetti = new THREE.Mesh(geometry, material);
+        
+        // Рандомное позиционирование в верхней части сцены
+        confetti.position.set(
+            THREE.MathUtils.randFloatSpread(20),
+            THREE.MathUtils.randFloat(8, 20), 
+            THREE.MathUtils.randFloatSpread(20)
+        );
+        confetti.rotation.set(
+            Math.random() * Math.PI, 
+            Math.random() * Math.PI, 
+            Math.random() * Math.PI
+        );
+        // Сохраняем начальные параметры для анимации
+        confetti.userData.speed = THREE.MathUtils.randFloat(0.01, 0.05); 
+        confetti.userData.rotationSpeed = THREE.MathUtils.randFloat(0.01, 0.05); 
+        confettiGroup.add(confetti);
+    }
+    scene.add(confettiGroup);
+}
+
+createConfetti();
 
 
 // --- 4. Создание Вращающегося Торта и Свечей ---
@@ -58,20 +86,19 @@ const frostingColor = 0xffe6f0;
 const cakeMaterial = new THREE.MeshPhongMaterial({ color: cakeColor });
 const frostingMaterial = new THREE.MeshPhongMaterial({ color: frostingColor });
 
-// Слои торта
+// Слои торта (остались прежними)
 const layers = [
     { radius: 2.5, y: 0.5 },
     { radius: 2.0, y: 1.5 },
     { radius: 1.5, y: 2.5 }
 ];
-
 layers.forEach(layer => {
+    // ... (создание слоев и крема)
     const geo = new THREE.CylinderGeometry(layer.radius, layer.radius, 1, 64);
     const mesh = new THREE.Mesh(geo, cakeMaterial);
     mesh.position.y = layer.y;
     cakeGroup.add(mesh);
 
-    // Декоративный крем (Ruffles)
     const ruffleRadius = layer.radius + 0.05;
     const ruffleGeo = new THREE.TorusGeometry(ruffleRadius, 0.08, 16, 100);
     const ruffle = new THREE.Mesh(ruffleGeo, frostingMaterial);
@@ -79,7 +106,6 @@ layers.forEach(layer => {
     ruffle.position.y = layer.y + 0.5;
     cakeGroup.add(ruffle);
 });
-
 // Подставка
 const standGeo = new THREE.CylinderGeometry(0.5, 1.5, 1.5, 32);
 const standMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
@@ -87,12 +113,21 @@ const stand = new THREE.Mesh(standGeo, standMat);
 stand.position.y = -0.75;
 cakeGroup.add(stand);
 
-// Свечи
+// Свечи (с новым коническим пламенем и эффектом свечения)
 function addCandles(group, radius, count, height) {
     const candleGeometry = new THREE.CylinderGeometry(0.08, 0.08, height, 16);
     const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); 
-    const flameColor = 0xffaa00; 
+    const flameColor = 0xffa500; 
     
+    // Материал для визуального пламени (конуса)
+    const flameMat = new THREE.MeshBasicMaterial({ 
+        color: 0xff8800, 
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending 
+    });
+    const flameGeo = new THREE.ConeGeometry(0.05, 0.2, 8); 
+
     for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
         const x = radius * Math.cos(angle);
@@ -102,32 +137,35 @@ function addCandles(group, radius, count, height) {
         candle.position.set(x, 3.0 + height / 2, z); 
         group.add(candle);
         
-        const flameLight = new THREE.PointLight(flameColor, 3, 1.5); 
-        flameLight.position.set(x, 3.0 + height, z);
-        flameLight.userData.baseIntensity = 3; 
+        // PointLight для реалистичного света
+        const flameLight = new THREE.PointLight(flameColor, 5, 2); 
+        flameLight.position.set(x, 3.0 + height + 0.1, z);
+        flameLight.userData.baseIntensity = 5; 
         group.add(flameLight);
         
-        const flameGeo = new THREE.SphereGeometry(0.05, 8, 8);
-        const flameMat = new THREE.MeshBasicMaterial({ color: flameColor });
+        // Визуальный конус пламени
         const flame = new THREE.Mesh(flameGeo, flameMat);
-        flame.position.copy(flameLight.position);
+        flame.position.set(x, 3.0 + height + 0.15, z);
         group.add(flame);
     }
 }
-
 addCandles(cakeGroup, 0.7, 5, 1.0); 
 scene.add(cakeGroup);
 cakeGroup.position.y = 0.5;
-
 const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
 
 
-// --- 5. Интерактивные Сердечки-Сюрпризы ---
+// --- 5. Интерактивные Сердечки-Сюрпризы (УВЕЛИЧЕНО ДО 8) ---
 // !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ !!!
 const surpriseData = [
     { title: "🎁 Сердечко 1: Наша Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './photo1.jpg', position: new THREE.Vector3(4, 3, 0), color: 0xff007f },
-    { title: "💖 Сердечко 2: Главное Пожелание", text: "Ашим, я желаю тебе... (Ваше пожелание 2)", image: './photo2.jpg', position: new THREE.Vector3(-4, 6, 1), color: 0x00ffff },
-    { title: "🌟 Сердечко 3: Секретный Подарок", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 8, -2), color: 0xffff00 },
+    { title: "💖 Сердечко 2: Забавный Случай", text: "Ха-ха, помнишь, как... (Ваше пожелание 2)", image: './photo2.jpg', position: new THREE.Vector3(-4, 6, 1), color: 0x00ffff },
+    { title: "🌟 Сердечко 3: Главное Пожелание", text: "Ашим, я желаю тебе... (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 8, -2), color: 0xffff00 },
+    { title: "🎈 Сердечко 4: Секретный Подарок", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 4)", image: './photo3.jpg', position: new THREE.Vector3(5, 7, 3), color: 0xff00ff },
+    { title: "💌 Сердечко 5: Мои Чувства", text: "Мои самые теплые слова... (Ваше пожелание 5)", image: '', position: new THREE.Vector3(-5, 4, -3), color: 0x00ff00 },
+    { title: "✨ Сердечко 6: Новые Приключения", text: "Давай запланируем... (Ваше пожелание 6)", image: './photo4.jpg', position: new THREE.Vector3(1, 9, 4), color: 0xffa500 },
+    { title: "🥳 Сердечко 7: С Днем Рождения!", text: "С праздником, мой любимый! (Ваше пожелание 7)", image: '', position: new THREE.Vector3(-2, 2, 5), color: 0x9900ff },
+    { title: "💍 Сердечко 8: Навсегда", text: "Моя мечта для нас... (Ваше пожелание 8)", image: './photo5.jpg', position: new THREE.Vector3(4, 10, -1), color: 0xffffff }, // Белое
 ];
 
 const interactiveMeshes = [];
@@ -219,27 +257,37 @@ function animate(time) {
 
     // Анимация полета сердечек
     interactiveMeshes.forEach((heart) => {
-        // Медленное вертикальное движение (вверх-вниз)
         const verticalShift = Math.sin(actualTime * 0.5 + heart.userData.animationIndex * 5) * 0.5;
         heart.position.y = heart.userData.baseY + verticalShift;
-        
-        // Постоянное медленное вращение
         heart.rotation.z += 0.01;
     });
+
+    // Анимация падения конфетти
+    confettiGroup.children.forEach(confetti => {
+        confetti.position.y -= confetti.userData.speed;
+        confetti.rotation.y += confetti.userData.rotationSpeed;
+        confetti.rotation.x += confetti.userData.rotationSpeed * 0.5;
+
+        // Если конфетти упало ниже сцены, перемещаем его наверх
+        if (confetti.position.y < -5) {
+            confetti.position.y = THREE.MathUtils.randFloat(15, 20);
+            confetti.position.x = THREE.MathUtils.randFloatSpread(20);
+            confetti.position.z = THREE.MathUtils.randFloatSpread(20);
+        }
+    });
+
 
     // Обработка наведения курсора
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObjects(interactiveMeshes, false);
 
     if (intersects.length > 0) {
-        // Эффект выделения: увеличиваем сердечко
         const intersectedHeart = intersects[0].object;
         if (intersectedHeart.scale.x < 1.1) {
              intersectedHeart.scale.set(1.1, 1.1, 1.1);
         }
         document.body.style.cursor = 'pointer'; 
     } else {
-        // Сброс размера всех сердечек
         interactiveMeshes.forEach(heart => {
             if (heart.scale.x > 1.0) {
                 heart.scale.set(1.0, 1.0, 1.0);
