@@ -4,7 +4,7 @@ const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000); // Глубокий черный фон
+renderer.setClearColor(0x000000); // Глубокий черный фон для ночного неба
 document.getElementById('scene-container').appendChild(renderer.domElement);
 camera.position.set(0, 4, 10);
 
@@ -44,6 +44,7 @@ const stars = createStarField();
 // --- 3.75. 3D-текст "Happy Birthday" ---
 const fontLoader = new THREE.FontLoader();
 
+// Загрузка шрифта и создание геометрии текста
 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
     const textGeometry = new THREE.TextGeometry('Happy Birthday, Ashim!', {
         font: font,
@@ -73,7 +74,7 @@ fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.
 
 // --- 3.5. Конфетти ---
 const confettiCount = 500;
-const confettiColors = [0xff007f, 0x00ffff, 0xffff00, 0xffe6f0]; // Розовый, голубой, желтый, белый
+const confettiColors = [0xff007f, 0x00ffff, 0xffff00, 0xffe6f0]; 
 const confettiGroup = new THREE.Group();
 
 function createConfetti() {
@@ -183,7 +184,7 @@ const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
 
 
 // --- 5. Интерактивные Сердечки-Сюрпризы (8 Штук) ---
-// !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ !!!
+// !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ ПУТИ К ФОТО!!!
 const surpriseData = [
     { title: "🎁 Сердечко 1: Наши гулянки", text: "Я обожаю тратить с тобой свое время и ни капли не жалею о них", image: './photo1.jpg', position: new THREE.Vector3(4, 3, 0), color: 0xff007f },
     { title: "💖 Сердечко 2: Веселые разговорчики", text: "Люблю говорить с тобой обо всем,в такие моменты кажется что все ебланы кроме нас", image: './photo2.jpg', position: new THREE.Vector3(-4, 6, 1), color: 0x00ffff },
@@ -192,12 +193,12 @@ const surpriseData = [
     { title: "💌 Сердечко 5: Моя вера в тебя", text: "Я знаю какой ты прекрасный человек и знаю что ты всего можешь достичь своими стараниями", image: '', position: new THREE.Vector3(-5, 4, -3), color: 0x00ff00 },
     { title: "✨ Сердечко 6: Новые Приключения", text: "Ты стал мне самым близким другом которого у меня никогда не было,я рада что ты у меня есть", image: './photo4.jpg', position: new THREE.Vector3(1, 9, 4), color: 0xffa500 },
     { title: "🥳 Сердечко 7: С Днем Рождения!", text: "С праздником, мой дорогой лучший друг! Я обожаю тебя и хочу чтобы мы также поддерживали друг друга ", image: '', position: new THREE.Vector3(-2, 2, 5), color: 0x9900ff },
-    { title: "💍 Сердечко 8: Навсегда", text: "Твоя подружка гордится тобой и твоими стараниями,продолжай быть таким прекрасным ", image: './photo5.jpg', position: new THREE.Vector3(4, 10, -1), color: 0xffffff }, // Белое
+    { title: "💍 Сердечко 8: Навсегда", text: "Твоя подружка гордится тобой и твоими стараниями,продолжай быть таким прекрасным ", image: './photo5.jpg', position: new THREE.Vector3(4, 10, -1), color: 0xffffff }, 
 ];
 
 const interactiveMeshes = [];
 
-// Геометрия сердечка (приближенная форма)
+// Геометрия сердечка 
 function createHeartGeometry() {
     const shape = new THREE.Shape();
     const x = 0, y = 0;
