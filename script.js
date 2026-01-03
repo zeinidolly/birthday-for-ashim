@@ -128,8 +128,8 @@ cakeGroup.position.y = 0.5;
 // --- 5. Интерактивные Ячейки (Сюрпризы) ---
 const surpriseData = [
     // УКАЗАТЬ ВАШИ ПОЖЕЛАНИЯ И ПУТИ К ФОТО
-    { title: "Наша Первая Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './photo1.jpg', position: new THREE.Vector3(3.5, 4.5, 0) },
-    { title: "Мое Главное Пожелание", text: "Ашим, я желаю тебе... (Ваше пожелание 2)", image: './photo2.jpg', position: new THREE.Vector3(-3.5, 4.5, 0) },
+    { title: "Наша Первая Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './2026-01-03 18.07.05.jpg', position: new THREE.Vector3(3.5, 4.5, 0) },
+    { title: "Мое Главное Пожелание", text: "Ашим, я желаю тебе достичь,всего что ты желаешь ", image: './photo2.jpg', position: new THREE.Vector3(-3.5, 4.5, 0) },
     { title: "Мой Огромный Сюрприз", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 7, 0) }
 ];
 
@@ -241,3 +241,4 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
