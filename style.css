@@ -1,62 +1,51 @@
-body {
+ body {
     margin: 0;
-    background: radial-gradient(#0b1d3a, #02010a);
-    overflow: hidden;
-    font-family: sans-serif;
-    color: white;
-  }
-  
-  .stars {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: url("images/stars.png");
-    animation: twinkle 10s infinite alternate;
-  }
-  
-  @keyframes twinkle {
-    from { opacity: 0.6; }
-    to { opacity: 1; }
-  }
-  
-  .scene {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    overflow: hidden; /* Скрываем полосы прокрутки */
+    background-color: #00001a; /* Глубокий синий цвет для ночного неба */
+    font-family: 'Arial', sans-serif;
+}
+
+#scene-container {
+    width: 100vw;
     height: 100vh;
-  }
-  
-  .cake {
-    width: 300px;
-    height: 300px;
-    background: url("images/cake.png") center/contain no-repeat;
-    animation: rotate 12s linear infinite;
-    position: relative;
-  }
-  
-  @keyframes rotate {
-    from { transform: rotateY(0deg); }
-    to { transform: rotateY(360deg); }
-  }
-  
-  .candle, .star {
-    position: absolute;
-    width: 30px;
-    height: 30px;
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 10; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.7); 
+    padding-top: 50px;
+}
+
+.modal-content {
+    background-color: #1a1a2e; /* Темный фон для контраста */
+    margin: 5% auto; 
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%; 
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    color: #f0f0f0;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #fff;
+    text-decoration: none;
     cursor: pointer;
-  }
-  
-  .candle {
-    top: 60px;
-    left: 130px;
-    background: pink;
-    border-radius: 10px;
-  }
-  
-  .star {
-    top: 10px;
-    right: 40px;
-    background: gold;
-    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-  }
-  
+}
