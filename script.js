@@ -1,20 +1,20 @@
 // --- 1. Инициализация Сцены ---
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+// Камера с более широким обзором
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000); 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x00001a); // Цвет темного неба
+renderer.setClearColor(0x000000); // Глубокий черный фон для ночного неба
 document.getElementById('scene-container').appendChild(renderer.domElement);
 
-// Устанавливаем камеру для лучшего обзора торта
+// Позиция камеры, чтобы торт был хорошо виден
 camera.position.set(0, 4, 10);
 
 // --- 2. Свет ---
 const ambientLight = new THREE.AmbientLight(0x404040, 2); 
 scene.add(ambientLight);
 
-// Добавляем Directional Light, чтобы торт выглядел объемным
 const mainLight = new THREE.DirectionalLight(0xffffff, 1);
 mainLight.position.set(5, 10, 5);
 scene.add(mainLight);
@@ -38,7 +38,7 @@ function createStarField() {
 
     const starMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.15, // Немного крупнее для видимости
+        size: 0.25, // Увеличенный размер для видимости на черном фоне
         sizeAttenuation: true
     });
 
@@ -53,12 +53,12 @@ const stars = createStarField();
 // --- 4. Создание Вращающегося Торта и Свечей ---
 
 const cakeGroup = new THREE.Group();
-const cakeColor = 0xf5b7c8; // Светло-розовый цвет
-const frostingColor = 0xffe6f0; // Более светлый крем
+const cakeColor = 0xf5b7c8;
+const frostingColor = 0xffe6f0;
 const cakeMaterial = new THREE.MeshPhongMaterial({ color: cakeColor });
 const frostingMaterial = new THREE.MeshPhongMaterial({ color: frostingColor });
 
-// 4.1. Слои торта
+// Слои торта
 const layers = [
     { radius: 2.5, y: 0.5 },
     { radius: 2.0, y: 1.5 },
@@ -71,7 +71,7 @@ layers.forEach(layer => {
     mesh.position.y = layer.y;
     cakeGroup.add(mesh);
 
-    // 4.2. Декоративный крем (Ruffles) по краю
+    // Декоративный крем (Ruffles)
     const ruffleRadius = layer.radius + 0.05;
     const ruffleGeo = new THREE.TorusGeometry(ruffleRadius, 0.08, 16, 100);
     const ruffle = new THREE.Mesh(ruffleGeo, frostingMaterial);
@@ -80,14 +80,14 @@ layers.forEach(layer => {
     cakeGroup.add(ruffle);
 });
 
-// 4.3. Подставка для торта (как на макете)
+// Подставка
 const standGeo = new THREE.CylinderGeometry(0.5, 1.5, 1.5, 32);
 const standMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
 const stand = new THREE.Mesh(standGeo, standMat);
 stand.position.y = -0.75;
 cakeGroup.add(stand);
 
-// 4.4. Свечи
+// Свечи
 function addCandles(group, radius, count, height) {
     const candleGeometry = new THREE.CylinderGeometry(0.08, 0.08, height, 16);
     const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); 
@@ -98,18 +98,15 @@ function addCandles(group, radius, count, height) {
         const x = radius * Math.cos(angle);
         const z = radius * Math.sin(angle);
         
-        // Тело свечи
-        const candle = new THREE.Mesh(candleGeometry, candleMaterial);
+        const candle = new THREE.Mesh(candleGeometry, candleMaterial.clone());
         candle.position.set(x, 3.0 + height / 2, z); 
         group.add(candle);
         
-        // Пламя (Light) - Имитация мерцания
         const flameLight = new THREE.PointLight(flameColor, 3, 1.5); 
         flameLight.position.set(x, 3.0 + height, z);
-        flameLight.userData.baseIntensity = 3; // Для анимации мерцания
+        flameLight.userData.baseIntensity = 3; 
         group.add(flameLight);
         
-        // Пламя (Visual - жёлтая точка)
         const flameGeo = new THREE.SphereGeometry(0.05, 8, 8);
         const flameMat = new THREE.MeshBasicMaterial({ color: flameColor });
         const flame = new THREE.Mesh(flameGeo, flameMat);
@@ -118,46 +115,82 @@ function addCandles(group, radius, count, height) {
     }
 }
 
-// Добавляем 5 свечей на верхний слой торта (радиус 0.7, высота 1.0)
 addCandles(cakeGroup, 0.7, 5, 1.0); 
-
 scene.add(cakeGroup);
 cakeGroup.position.y = 0.5;
 
+const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
 
-// --- 5. Интерактивные Ячейки (Сюрпризы) ---
+
+// --- 5. Интерактивные Сердечки-Сюрпризы ---
+// !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ !!!
 const surpriseData = [
-    // УКАЗАТЬ ВАШИ ПОЖЕЛАНИЯ И ПУТИ К ФОТО
-    { title: "Наша Первая Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './2026-01-03 18.07.05.jpg', position: new THREE.Vector3(3.5, 4.5, 0) },
-    { title: "Мое Главное Пожелание", text: "Ашим, я желаю тебе достичь,всего что ты желаешь ", image: './photo2.jpg', position: new THREE.Vector3(-3.5, 4.5, 0) },
-    { title: "Мой Огромный Сюрприз", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 7, 0) }
+    { title: "🎁 Сердечко 1: Наша Встреча", text: "Вспоминаешь этот день? Как будто вчера! (Ваше пожелание 1)", image: './photo1.jpg', position: new THREE.Vector3(4, 3, 0), color: 0xff007f },
+    { title: "💖 Сердечко 2: Главное Пожелание", text: "Ашим, я желаю тебе... (Ваше пожелание 2)", image: './photo2.jpg', position: new THREE.Vector3(-4, 6, 1), color: 0x00ffff },
+    { title: "🌟 Сердечко 3: Секретный Подарок", text: "Тут ты должен развернуть большой подарок! (Ваше пожелание 3)", image: '', position: new THREE.Vector3(0, 8, -2), color: 0xffff00 },
 ];
 
 const interactiveMeshes = [];
-const surpriseMaterial = new THREE.MeshLambertMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.01 }); // Почти невидимый объект
-const surpriseGeometry = new THREE.BoxGeometry(1.5, 1.5, 0.1); // Большая кликабельная область
 
-surpriseData.forEach((data) => {
-    const mesh = new THREE.Mesh(surpriseGeometry, surpriseMaterial.clone());
-    mesh.position.copy(data.position);
-    mesh.userData = data; 
-    scene.add(mesh);
-    interactiveMeshes.push(mesh);
+// Геометрия сердечка (приближенная форма)
+function createHeartGeometry() {
+    const shape = new THREE.Shape();
+    const x = 0, y = 0;
+    shape.moveTo(x + 0.25, y + 0.25);
+    shape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
+    shape.bezierCurveTo(x - 0.3, y, x - 0.3, y + 0.35, x - 0.3, y + 0.35);
+    shape.bezierCurveTo(x - 0.3, y + 0.55, x - 0.15, y + 0.65, x, y + 0.85);
+    shape.bezierCurveTo(x + 0.15, y + 0.65, x + 0.3, y + 0.55, x + 0.3, y + 0.35);
+    shape.bezierCurveTo(x + 0.3, y + 0.35, x + 0.3, y, x + 0.25, y + 0.25);
+    
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+        steps: 2,
+        depth: 0.1,
+        bevelEnabled: true,
+        bevelThickness: 0.05,
+        bevelSize: 0.05,
+        bevelSegments: 1
+    });
+    geometry.scale(0.5, 0.5, 0.5); 
+    return geometry;
+}
+
+const heartGeometry = createHeartGeometry();
+
+surpriseData.forEach((data, index) => {
+    const heartMaterial = new THREE.MeshPhongMaterial({ 
+        color: data.color, 
+        transparent: true, 
+        opacity: 0.9,
+        emissive: data.color, 
+        emissiveIntensity: 0.3
+    });
+    
+    const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+    
+    heart.position.copy(data.position);
+    heart.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    
+    heart.userData = data; 
+    heart.userData.baseY = data.position.y;
+    heart.userData.animationIndex = index;
+    
+    scene.add(heart);
+    interactiveMeshes.push(heart);
 });
+
 
 // --- 6. Raycasting (Для кликов) ---
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-let INTERSECTED = null;
 
 function onPointerMove(event) {
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    document.body.style.cursor = 'default'; // Сброс курсора
+    document.body.style.cursor = 'default'; 
 }
 
 function onClick(event) {
-    // При клике открываем модальное окно, только если объект наведен
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObjects(interactiveMeshes, false);
 
@@ -171,31 +204,47 @@ window.addEventListener('click', onClick);
 
 
 // --- 7. Анимационный Цикл ---
-const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
-
-function animate() {
+function animate(time) {
     requestAnimationFrame(animate);
+    const actualTime = time * 0.003;
 
     // Вращение торта и звезд
     cakeGroup.rotation.y += 0.005;
     stars.rotation.y += 0.0005;
 
     // Мерцание пламени
-    const time = Date.now() * 0.003;
     allFlameLights.forEach(light => {
-        // Рандомное изменение интенсивности
-        light.intensity = light.userData.baseIntensity + Math.sin(time + light.position.x * 10) * 0.5;
+        light.intensity = light.userData.baseIntensity + Math.sin(actualTime + light.position.x * 10) * 0.5;
     });
 
+    // Анимация полета сердечек
+    interactiveMeshes.forEach((heart) => {
+        // Медленное вертикальное движение (вверх-вниз)
+        const verticalShift = Math.sin(actualTime * 0.5 + heart.userData.animationIndex * 5) * 0.5;
+        heart.position.y = heart.userData.baseY + verticalShift;
+        
+        // Постоянное медленное вращение
+        heart.rotation.z += 0.01;
+    });
 
     // Обработка наведения курсора
     raycaster.setFromCamera(pointer, camera);
     const intersects = raycaster.intersectObjects(interactiveMeshes, false);
 
     if (intersects.length > 0) {
-        // Устанавливаем курсор "рука", чтобы показать интерактивность
+        // Эффект выделения: увеличиваем сердечко
+        const intersectedHeart = intersects[0].object;
+        if (intersectedHeart.scale.x < 1.1) {
+             intersectedHeart.scale.set(1.1, 1.1, 1.1);
+        }
         document.body.style.cursor = 'pointer'; 
     } else {
+        // Сброс размера всех сердечек
+        interactiveMeshes.forEach(heart => {
+            if (heart.scale.x > 1.0) {
+                heart.scale.set(1.0, 1.0, 1.0);
+            }
+        });
         document.body.style.cursor = 'default'; 
     }
 
@@ -241,4 +290,3 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
