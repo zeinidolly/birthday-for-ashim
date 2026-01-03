@@ -4,7 +4,7 @@ const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000); // Глубокий черный фон для ночного неба
+renderer.setClearColor(0x000000); // Глубокий черный фон
 document.getElementById('scene-container').appendChild(renderer.domElement);
 camera.position.set(0, 4, 10);
 
@@ -41,52 +41,22 @@ function createStarField() {
 const stars = createStarField();
 
 
-// --- 3.75. 3D-текст "Happy Birthday" ---
-const fontLoader = new THREE.FontLoader();
-
-// Загрузка шрифта и создание геометрии текста
-fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-    const textGeometry = new THREE.TextGeometry('Happy Birthday, Ashim!', {
-        font: font,
-        size: 1.5, // Размер текста
-        height: 0.3, // Глубина текста
-        curveSegments: 12,
-        bevelEnabled: true,
-        bevelThickness: 0.02,
-        bevelSize: 0.02,
-        bevelOffset: 0,
-        bevelSegments: 5
-    });
-    
-    textGeometry.computeBoundingBox();
-    textGeometry.center();
-
-    const textMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 }); // Золотой цвет
-    const birthdayText = new THREE.Mesh(textGeometry, textMaterial);
-    
-    // Позиционируем на заднем плане
-    birthdayText.position.set(0, 7, -8); 
-    birthdayText.rotation.y = 0.1;
-
-    scene.add(birthdayText);
-});
-
-
-// --- 3.5. Конфетти ---
+// --- 3.5. Конфетти (НОВЫЙ БЛОК) ---
 const confettiCount = 500;
-const confettiColors = [0xff007f, 0x00ffff, 0xffff00, 0xffe6f0]; 
+const confettiColors = [0xff007f, 0x00ffff, 0xffff00, 0xffe6f0]; // Розовый, голубой, желтый, белый
 const confettiGroup = new THREE.Group();
 
 function createConfetti() {
     for (let i = 0; i < confettiCount; i++) {
         const size = THREE.MathUtils.randFloat(0.05, 0.15);
-        const geometry = new THREE.PlaneGeometry(size, size); 
+        const geometry = new THREE.PlaneGeometry(size, size); // Плоское конфетти
         const material = new THREE.MeshBasicMaterial({ 
             color: confettiColors[i % confettiColors.length], 
             side: THREE.DoubleSide
         });
         const confetti = new THREE.Mesh(geometry, material);
         
+        // Рандомное позиционирование в верхней части сцены
         confetti.position.set(
             THREE.MathUtils.randFloatSpread(20),
             THREE.MathUtils.randFloat(8, 20), 
@@ -97,6 +67,7 @@ function createConfetti() {
             Math.random() * Math.PI, 
             Math.random() * Math.PI
         );
+        // Сохраняем начальные параметры для анимации
         confetti.userData.speed = THREE.MathUtils.randFloat(0.01, 0.05); 
         confetti.userData.rotationSpeed = THREE.MathUtils.randFloat(0.01, 0.05); 
         confettiGroup.add(confetti);
@@ -115,13 +86,14 @@ const frostingColor = 0xffe6f0;
 const cakeMaterial = new THREE.MeshPhongMaterial({ color: cakeColor });
 const frostingMaterial = new THREE.MeshPhongMaterial({ color: frostingColor });
 
-// Слои торта
+// Слои торта (остались прежними)
 const layers = [
     { radius: 2.5, y: 0.5 },
     { radius: 2.0, y: 1.5 },
     { radius: 1.5, y: 2.5 }
 ];
 layers.forEach(layer => {
+    // ... (создание слоев и крема)
     const geo = new THREE.CylinderGeometry(layer.radius, layer.radius, 1, 64);
     const mesh = new THREE.Mesh(geo, cakeMaterial);
     mesh.position.y = layer.y;
@@ -141,7 +113,7 @@ const stand = new THREE.Mesh(standGeo, standMat);
 stand.position.y = -0.75;
 cakeGroup.add(stand);
 
-// Свечи (с коническим пламенем и эффектом свечения)
+// Свечи (с новым коническим пламенем и эффектом свечения)
 function addCandles(group, radius, count, height) {
     const candleGeometry = new THREE.CylinderGeometry(0.08, 0.08, height, 16);
     const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); 
@@ -183,9 +155,9 @@ cakeGroup.position.y = 0.5;
 const allFlameLights = cakeGroup.children.filter(obj => obj.isPointLight);
 
 
-// --- 5. Интерактивные Сердечки-Сюрпризы (8 Штук) ---
-// !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ ПУТИ К ФОТО!!!
-const surpriseData = [
+// --- 5. Интерактивные Сердечки-Сюрпризы (УВЕЛИЧЕНО ДО 8) ---
+// !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ !!!
+cconst surpriseData = [
     { title: "🎁 Сердечко 1: Наши гулянки", text: "Я обожаю тратить с тобой свое время и ни капли не жалею о них", image: './photo1.jpg', position: new THREE.Vector3(4, 3, 0), color: 0xff007f },
     { title: "💖 Сердечко 2: Веселые разговорчики", text: "Люблю говорить с тобой обо всем,в такие моменты кажется что все ебланы кроме нас", image: './photo2.jpg', position: new THREE.Vector3(-4, 6, 1), color: 0x00ffff },
     { title: "🌟 Сердечко 3: Главное Пожелание", text: "Ашим, я желаю тебе достичь всего чего ты пожелаешь, и уверена что достигнешь ведь ты у нас целеустремленный", image: '', position: new THREE.Vector3(0, 8, -2), color: 0xffff00 },
@@ -193,12 +165,12 @@ const surpriseData = [
     { title: "💌 Сердечко 5: Моя вера в тебя", text: "Я знаю какой ты прекрасный человек и знаю что ты всего можешь достичь своими стараниями", image: '', position: new THREE.Vector3(-5, 4, -3), color: 0x00ff00 },
     { title: "✨ Сердечко 6: Новые Приключения", text: "Ты стал мне самым близким другом которого у меня никогда не было,я рада что ты у меня есть", image: './photo4.jpg', position: new THREE.Vector3(1, 9, 4), color: 0xffa500 },
     { title: "🥳 Сердечко 7: С Днем Рождения!", text: "С праздником, мой дорогой лучший друг! Я обожаю тебя и хочу чтобы мы также поддерживали друг друга ", image: '', position: new THREE.Vector3(-2, 2, 5), color: 0x9900ff },
-    { title: "💍 Сердечко 8: Навсегда", text: "Твоя подружка гордится тобой и твоими стараниями,продолжай быть таким прекрасным ", image: './photo5.jpg', position: new THREE.Vector3(4, 10, -1), color: 0xffffff }, 
+    { title: "💍 Сердечко 8: Навсегда", text: "Твоя подружка гордится тобой и твоими стараниями,продолжай быть таким прекрасным ", image: './photo5.jpg', position: new THREE.Vector3(4, 10, -1), color: 0xffffff }, // Белое
 ];
 
 const interactiveMeshes = [];
 
-// Геометрия сердечка 
+// Геометрия сердечка (приближенная форма)
 function createHeartGeometry() {
     const shape = new THREE.Shape();
     const x = 0, y = 0;
