@@ -48,7 +48,9 @@ function createStarField() {
 
 const stars = createStarField();
 
-// --- 4. Создание Вращающегося Торта (Многослойный) ---
+// ... (Остальной код до части 4 остается прежним)
+
+// --- 4. Создание Вращающегося Торта (Многослойный) и Свечей ---
 const cakeGroup = new THREE.Group();
 const cakeMaterial = new THREE.MeshPhongMaterial({ color: 0xffa0c0 }); // Розовый крем
 
@@ -70,9 +72,49 @@ const mesh3 = new THREE.Mesh(geo3, cakeMaterial);
 mesh3.position.y = 2.5;
 cakeGroup.add(mesh3);
 
-// Добавляем торт в сцену
+/**
+ * Функция для добавления свечей на верхний слой торта
+ */
+function addCandles(group, radius, count, height) {
+    const candleGeometry = new THREE.CylinderGeometry(0.05, 0.05, height, 8);
+    const candleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Белая свеча
+    const flameColor = 0xffa500; // Оранжево-желтый цвет пламени
+    
+    // Создаем несколько свечей, расположенных по кругу
+    for (let i = 0; i < count; i++) {
+        // Вычисляем позицию по кругу
+        const angle = (i / count) * Math.PI * 2;
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+        
+        // 1. Тело свечи
+        const candle = new THREE.Mesh(candleGeometry, candleMaterial);
+        candle.position.set(x, 2.5 + height / 2, z); // 2.5 - высота верхнего слоя торта
+        group.add(candle);
+        
+        // 2. Пламя (имитация с помощью PointLight)
+        const flameLight = new THREE.PointLight(flameColor, 2, 1.5); // Интенсивный, небольшой радиус
+        flameLight.position.set(x, 2.5 + height + 0.1, z);
+        group.add(flameLight);
+        
+        // 3. Визуальное представление пламени (для красоты)
+        const flameGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const flameMaterial = new THREE.MeshBasicMaterial({ color: flameColor });
+        const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+        flame.position.copy(flameLight.position);
+        group.add(flame);
+    }
+}
+
+// Добавляем 8 свечей на верхний слой торта (радиус 1.3, высота 0.5)
+addCandles(cakeGroup, 1.3, 8, 0.5); 
+
+
+// Добавляем торт (вместе со свечами) в сцену
 scene.add(cakeGroup);
 cakeGroup.position.y = -1; // Опускаем его немного, чтобы был виден постамент
+
+// ... (Остальной код, включая 5, 6, 7 и 8, остается прежним)
 
 // --- 5. Интерактивные Ячейки (Сюрпризы) ---
 const surpriseData = [
@@ -193,4 +235,5 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
   
+
 
