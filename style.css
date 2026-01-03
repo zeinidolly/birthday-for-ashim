@@ -1,0 +1,62 @@
+body {
+    margin: 0;
+    background: radial-gradient(#0b1d3a, #02010a);
+    overflow: hidden;
+    font-family: sans-serif;
+    color: white;
+  }
+  
+  .stars {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url("images/stars.png");
+    animation: twinkle 10s infinite alternate;
+  }
+  
+  @keyframes twinkle {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+  }
+  
+  .scene {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .cake {
+    width: 300px;
+    height: 300px;
+    background: url("images/cake.png") center/contain no-repeat;
+    animation: rotate 12s linear infinite;
+    position: relative;
+  }
+  
+  @keyframes rotate {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+  }
+  
+  .candle, .star {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  
+  .candle {
+    top: 60px;
+    left: 130px;
+    background: pink;
+    border-radius: 10px;
+  }
+  
+  .star {
+    top: 10px;
+    right: 40px;
+    background: gold;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+  
